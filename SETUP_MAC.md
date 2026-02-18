@@ -99,27 +99,27 @@ Oben in der Xcode-Toolbar:
 
 - Sprachaufnahme (iOS Speech Recognition)
 - Transkription (Sprache → Text)
+- **Automatischer KI-Modell-Download** beim ersten Start
+- **KI-gestützte Strukturierung** (TinyLlama 1.1B)
 - Lokale Speicherung
 - UI/UX komplett
 - Suche
 
-### ⚠️ Was noch fehlt:
+### 🤖 KI-Modell-Download:
 
-**LLM-Integration ist im Fallback-Modus:**
+**Beim ersten App-Start:**
 
-Die App verwendet derzeit eine **vereinfachte Strukturierung**:
-- Titel = erste 5 Worte
-- Kategorie = "Allgemein"
-- Tags = einfache Keyword-Extraktion
+1. Die App lädt automatisch das KI-Modell herunter (~650 MB)
+2. Ein Fortschrittsbalken zeigt den Download-Status
+3. Das Modell wird lokal gespeichert (nur einmalig)
+4. Nachfolgende Starts sind sofort einsatzbereit
 
-**Um vollständige KI-Strukturierung zu aktivieren:**
+**Sie müssen nichts manuell herunterladen oder konfigurieren!**
 
-1. LLM-Modell herunterladen (z.B. Phi-3-mini)
-2. Modell nach `ios/VoiceNotesApp/Resources/` kopieren
-3. In Xcode: File → Add Files
-4. Code in `LLMService.ts` anpassen (Zeile ~70-80)
-
-Detaillierte Anleitung siehe: **README.md → LLM-Integration (Erweitert)**
+**Fallback-Modus:**
+- Falls der Download fehlschlägt (z.B. keine Internetverbindung)
+- Nutzt die App eine vereinfachte Strukturierung
+- Der Download kann später erneut versucht werden
 
 ---
 

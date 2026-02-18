@@ -99,45 +99,43 @@ open ios/VoiceNotesApp.xcworkspace
 2. Klicken Sie auf den "Play"-Button in Xcode
 3. Die App wird gebaut und auf dem Gerät gestartet
 
-## 🧠 LLM-Integration (Erweitert)
+## 🧠 LLM-Integration
 
-### Aktueller Status
+### ✨ Vollständig automatisiert - Keine manuelle Konfiguration nötig!
 
-Die App verwendet derzeit einen **Fallback-Modus** für die Strukturierung:
+Die App lädt beim **ersten Start automatisch** ein KI-Modell herunter:
+
+- **Modell**: TinyLlama 1.1B Chat (Q4 quantisiert)
+- **Größe**: ~650 MB
+- **Download**: Automatisch beim ersten Start
+- **Speicherort**: Lokal auf dem Gerät (Document Directory)
+- **Nachfolgende Starts**: Sofort einsatzbereit (kein erneuter Download)
+
+### Beim ersten App-Start:
+
+1. Die App zeigt einen Fortschrittsbalken
+2. Das KI-Modell wird von Hugging Face heruntergeladen
+3. Das Modell wird lokal gespeichert
+4. Die KI-Strukturierung ist sofort aktiv
+
+### Fallback-Modus:
+
+Falls der Download fehlschlägt (z.B. keine Internetverbindung):
+- Die App nutzt eine vereinfachte Strukturierung
 - Einfache Titel-Generierung aus den ersten Wörtern
 - Basis-Kategorisierung
 - Keyword-Extraktion
 
-### Produktions-Setup mit lokalen Modellen
+Der Download kann später manuell erneut versucht werden.
 
-Für vollständige LLM-Funktionalität:
+### Funktionsweise der KI-Strukturierung:
 
-1. **Modell herunterladen** (z.B. Llama 3.2 3B GGUF):
-   ```bash
-   # Beispiel: Phi-3-mini (kleineres Modell für Mobile)
-   wget https://huggingface.co/.../phi-3-mini-4k-instruct.Q4_K_M.gguf
-   ```
-
-2. **Modell in App einbinden**:
-   - Modell-Datei nach `ios/VoiceNotesApp/Resources/` kopieren
-   - In Xcode: File → Add Files to "VoiceNotesApp"
-   - Pfad in `LLMService.ts` aktualisieren
-
-3. **LLM initialisieren**:
-   ```typescript
-   // In App.tsx oder HomeScreen.tsx
-   useEffect(() => {
-     LLMService.initialize('path/to/model.gguf');
-   }, []);
-   ```
-
-### Empfohlene Modelle für iOS
-
-| Modell | Größe | RAM | Geschwindigkeit |
-|--------|-------|-----|----------------|
-| Phi-3-mini-4k | ~2.3 GB | 3-4 GB | Schnell |
-| Llama 3.2 1B | ~1.2 GB | 2-3 GB | Sehr schnell |
-| Llama 3.2 3B | ~3.0 GB | 4-5 GB | Mittel |
+Das lokale LLM analysiert Ihre Sprachnotizen und erstellt automatisch:
+- 📝 **Prägnante Titel** - Kurze, aussagekräftige Zusammenfassung
+- 🏷️ **Kategorien** - "Arbeit", "Privat", "Einkauf", "Idee", "Todo", etc.
+- ✨ **Formatierter Inhalt** - Markdown-Listen, Aufzählungen, Strukturierung
+- 🔖 **Relevante Tags** - 3-5 Schlagworte für schnelles Suchen
+- ⚡ **Priorität** - Automatische Einschätzung (low/medium/high)
 
 ## 🎨 UI-Komponenten
 
@@ -184,18 +182,20 @@ await Voice.start('de-DE'); // Deutsch
 // await Voice.start('en-US'); // Englisch
 ```
 
-### LLM-Parameter anpassen
+### LLM-Parameter (Fortgeschritten)
 
-In `src/services/LLMService.ts`:
+Die Standardkonfiguration ist bereits optimiert. Bei Bedarf können Sie in `src/services/LLMService.ts` anpassen:
 
 ```typescript
 await initLlama({
   model: modelPath,
   use_mlock: true,
-  n_ctx: 2048,           // Context-Größe
-  n_gpu_layers: 0,       // GPU-Beschleunigung (iOS Metal)
+  n_ctx: 2048,           // Context-Größe (2048 = gut für Notizen)
+  n_gpu_layers: 1,       // GPU-Beschleunigung (iOS Metal)
 });
 ```
+
+**Hinweis**: Das Standard-Modell (TinyLlama 1.1B) ist für mobile Geräte optimiert und benötigt ca. 2-3 GB RAM.
 
 ## 🐛 Troubleshooting
 
@@ -216,7 +216,8 @@ await initLlama({
 
 ## 📝 TODO / Roadmap
 
-- [ ] LLM-Modell vollständig integrieren
+- [x] LLM-Modell vollständig integrieren (Automatischer Download)
+- [x] KI-gestützte Strukturierung
 - [ ] Notizen bearbeiten/löschen
 - [ ] Export-Funktion (PDF, Text)
 - [ ] Cloud-Sync (optional)
@@ -224,6 +225,7 @@ await initLlama({
 - [ ] Kategorien-Filter
 - [ ] Audio-Wiedergabe der Original-Aufnahme
 - [ ] Multi-Language Support
+- [ ] Manuelle Model-Auswahl (TinyLlama, Phi-3, Llama 3.2)
 
 ## 🤝 Entwicklung
 

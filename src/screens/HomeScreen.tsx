@@ -7,21 +7,48 @@ import {
   Text,
   Searchbar,
   Provider as PaperProvider,
+  ProgressBar,
+  Portal,
+  Dialog,
+  Button,
 } from 'react-native-paper';
 import {StorageService} from '../services/StorageService';
 import {VoiceRecorder} from '../components/VoiceRecorder';
 import {Note} from '../types/Note';
+import {LLMService} from '../services/LLMService';
 
 export const HomeScreen: React.FC = () => {
   const [notes, setNotes] = useState<Note[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredNotes, setFilteredNotes] = useState<Note[]>([]);
+  const [isInitializing, setIsInitializing] = useState(true);
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [initError, setInitError] = useState<string | null>(null);
 
   useEffect(() => {
+    initializeLLM();
     loadNotes();
     const interval = setInterval(loadNotes, 2000); // Refresh every 2 seconds
     return () => clearInterval(interval);
   }, []);
+
+  const initializeLLM = async () => {
+    try {
+      setIsInitializing(true);
+      setInitError(null);
+      
+      await LLMService.initialize((progress) => {
+        setDownloadProgress(progress);
+      });
+      
+      console.log('LLM initialized successfully');
+    } catch (error) {
+      console.error('Error initializing LLM:', error);
+      setInitError('KI-Modell konnte nicht geladen werden. Die App nutzt vereinfachte Strukturierung.');
+    } finally {
+      setIsInitializing(false);
+    }
+  };
 
   useEffect(() => {
     filterNotes();
@@ -121,6 +148,39 @@ export const HomeScreen: React.FC = () => {
         )}
 
         <VoiceRecorder />
+
+        {/* LLM Download Dialog */}
+        <Portal>
+          <Dialog visible={isInitializing} dismissable={false}>
+            <Dialog.Title>KI-Modell wird geladen</Dialog.Title>
+            <Dialog.Content>
+              <Text style={styles.dialogText}>
+                {downloadProgress > 0 && downloadProgress < 100
+                  ? `Lade KI-Modell herunter... ${downloadProgress.toFixed(0)}%`
+                  : 'Initialisiere KI-Modell...'}
+              </Text>
+              <ProgressBar 
+                progress={downloadProgress / 100} 
+                style={styles.progressBar}
+              />
+              <Text style={styles.dialogSubtext}>
+                Dies geschieht nur beim ersten Start. Das Modell (~650 MB) wird lokal gespeichert.
+              </Text>
+            </Dialog.Content>
+          </Dialog>
+
+          {initError && (
+            <Dialog visible={!!initError} onDismiss={() => setInitError(null)}>
+              <Dialog.Title>Hinweis</Dialog.Title>
+              <Dialog.Content>
+                <Text>{initError}</Text>
+              </Dialog.Content>
+              <Dialog.Actions>
+                <Button onPress={() => setInitError(null)}>OK</Button>
+              </Dialog.Actions>
+            </Dialog>
+          )}
+        </Portal>
       </View>
     </PaperProvider>
   );
@@ -175,5 +235,19 @@ const styles = StyleSheet.create({
     color: '#666',
     textAlign: 'center',
     lineHeight: 24,
+  },
+  dialogText: {
+    marginBottom: 16,
+    fontSize: 16,
+  },
+  dialogSubtext: {
+    marginTop: 8,
+    fontSize: 12,
+    color: '#666',
+    fontStyle: 'italic',
+  },
+  progressBar: {
+    height: 8,
+    borderRadius: 4,
   },
 });

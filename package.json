@@ -16,6 +16,7 @@
     "llama.rn": "^0.11.1",
     "react": "19.2.3",
     "react-native": "0.84.0",
+    "react-native-fs": "^2.20.0",
     "react-native-paper": "^5.15.0",
     "react-native-safe-area-context": "^5.5.2",
     "react-native-vector-icons": "^10.3.0"
